@@ -8,22 +8,22 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    redirect: '/login',
+    redirect: '/login'
   },
   {
     path: '/login',
     name: 'login',
-    component: Login,
+    component: Login
   },
   {
     path: '/home',
     name: 'home',
-    component: Home,
-  },
+    component: Home
+  }
 ]
 
 const router = new VueRouter({
-  routes,
+  routes
 })
 
 //挂载路由导航守卫
