@@ -10,12 +10,20 @@
     <!-- 页面主体区域 -->
     <el-container>
       <!-- 侧边栏 -->
-      <el-aside width="200px">
+      <el-aside :width="isCollapse ? '64px' : '200px'">
+        <div class="toggle-button" @click="toggleCollapse()">
+          III
+        </div>
         <!-- 侧边栏菜单区 -->
         <el-menu
           background-color="#333744"
           text-color="#fff"
           active-text-color="#409eef"
+          unique-opened
+          :collapse="isCollapse"
+          :collapse-transition="false"
+          :router="true"
+          :default-active="activePath"
         >
           <!-- 一级菜单 -->
           <el-submenu
@@ -33,9 +41,10 @@
 
             <!-- 二级菜单 -->
             <el-menu-item
-              :index="subItem.id + ''"
+              :index="'/' + item.path"
               v-for="subItem in item.children"
               :key="subItem.id"
+              @click="saveNavState('/' + subItem.path)"
             >
               <template slot="title">
                 <!-- 图标 -->
@@ -47,7 +56,9 @@
           </el-submenu>
         </el-menu></el-aside
       >
-      <el-main>Main</el-main>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -63,11 +74,14 @@ export default {
         101: 'el-icon-s-goods',
         102: 'el-icon-document-copy',
         145: 'el-icon-pie-chart'
-      }
+      },
+      isCollapse: false,
+      activePath: ''
     }
   },
   created() {
     this.getMenuList()
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout() {
@@ -82,6 +96,13 @@ export default {
       }
       this.menulist = res.data
       console.log(res)
+    },
+    toggleCollapse() {
+      this.isCollapse = !this.isCollapse
+    },
+    saveNavState(activePath) {
+      window.sessionStorage.setItem('activePath', activePath)
+      this.activePath = activePath
     }
   }
 }
@@ -113,8 +134,20 @@ export default {
 
 .el-aside {
   background-color: #333744;
+  .el-menu {
+    border-right: none;
+  }
 }
 .el-main {
   background-color: #fafafa;
+}
+.toggle-button {
+  background-color: #4a5064;
+  font-size: 10px;
+  line-height: 24px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.2em;
+  cursor: pointer;
 }
 </style>
