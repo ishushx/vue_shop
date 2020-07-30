@@ -9,10 +9,11 @@
     <el-card class="box-card">
       <el-row :gutter="20">
         <el-col :span="7"
-          ><el-input placeholder="请输入内容">
+          ><el-input placeholder="请输入内容" v-model="queryinfo.query">
             <el-button
               slot="append"
               icon="el-icon-search"
+              @click="getUserList()"
             ></el-button> </el-input
         ></el-col>
         <el-col :span="4">
@@ -32,6 +33,7 @@
               v-model="scope.row.mg_state"
               active-color="#13ce66"
               inactive-color="#ff4949"
+              @change="userStateChanged(scope.row)"
             >
             </el-switch>
           </template>
@@ -115,6 +117,16 @@ export default {
     handleCurrentChange(newPage) {
       this.queryinfo.pagenum = newPage
       this.getUserList()
+    },
+    async userStateChanged(userinfo) {
+      console.log(userinfo)
+      const { data: res } = await this.$http.put(
+        `users/${userinfo.id}/state/${userinfo.mg_state}`
+      )
+      if (res.meta.status !== 200) {
+        userinfo.mg_state = !userinfo.mg_state
+        return this.$message.error('更新用户状态失败')
+      }
     }
   }
 }
