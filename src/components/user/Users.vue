@@ -46,16 +46,18 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180px">
-          <template slot-scope="">
+          <template slot-scope="scope">
             <el-button
               type="primary"
               size="mini"
               icon="el-icon-edit"
+              @click="showEditDialog(scope.row.id)"
             ></el-button>
             <el-button
               type="danger"
               size="mini"
               icon="el-icon-delete"
+              @click="removeUserById(scope.row.id)"
             ></el-button>
 
             <el-tooltip
@@ -118,6 +120,35 @@
           <el-button type="primary" @click="addUser()">确 定</el-button>
         </span>
       </el-dialog>
+
+      <!-- edit dialog -->
+      <el-dialog
+        title="修改用户"
+        :visible.sync="editDialogVisible"
+        width="50%"
+        @close="editDialogClosed()"
+      >
+        <el-form
+          ref="editFormRef"
+          :model="editForm"
+          label-width="80px"
+          :rules="editFormRules"
+        >
+          <el-form-item label="用户名">
+            <el-input v-model="editForm.username" disabled></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="editForm.email"></el-input>
+          </el-form-item>
+          <el-form-item label="手机" prop="mobile">
+            <el-input v-model="editForm.mobile"></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="editUserInfo()">确 定</el-button>
+        </span>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -150,6 +181,28 @@ export default {
       userlist: [],
       total: 0,
       addDialogVisible: false,
+      editDialogVisible: false,
+
+      editForm: {},
+
+      editFormRules: {
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          {
+            validator: checkEmail,
+            trigger: 'blur',
+            message: '邮箱格式不正确'
+          }
+        ],
+        mobile: [
+          { required: true, message: '请输入手机', trigger: 'blur' },
+          {
+            validator: checkMobile,
+            trigger: 'blur',
+            message: '手机号格式不正确'
+          }
+        ]
+      },
       addForm: {
         username: '',
         password: '',
@@ -204,6 +257,30 @@ export default {
     this.getUserList()
   },
   methods: {
+    async removeUserById(id) {
+      console.log(id)
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该文件, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(error => error)
+
+      if (confirmResult !== 'confirm') return this.$message.info('取消删除')
+
+      const { data: res } = await this.$http.delete('users/' + id)
+
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除失败')
+      }
+
+      this.$message.success('删除用户成功!')
+      this.getUserList()
+    },
+
     async getUserList() {
       const { data: res } = await this.$http.get('users', {
         params: this.queryinfo
@@ -247,6 +324,39 @@ export default {
           this.$message.success('添加用户成功')
         }
         this.addDialogVisible = false
+        this.getUserList()
+      })
+    },
+    async showEditDialog(id) {
+      console.log(id)
+      const { data: res } = await this.$http.get('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('查询用户信息失败!')
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    editDialogClosed() {
+      this.$refs.editFormRef.resetFields()
+    },
+    editUserInfo() {
+      this.$refs.editFormRef.validate(async valid => {
+        console.log(valid)
+        if (!valid) return
+
+        const { data: res } = await this.$http.put(
+          'users/' + this.editForm.id,
+          {
+            email: this.editForm.email,
+            mobile: this.editForm.mobile
+          }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error('用户信息更新失败!')
+        } else {
+          this.$message.success('用户信息更新成功!')
+        }
+        this.editDialogVisible = false
         this.getUserList()
       })
     }
