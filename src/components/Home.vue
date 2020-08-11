@@ -25,6 +25,7 @@
           :router="true"
           :default-active="activePath"
         >
+        
           <!-- 一级菜单 -->
           <el-submenu
             :index="item.id + ''"
@@ -41,7 +42,7 @@
 
             <!-- 二级菜单 -->
             <el-menu-item
-              :index="'/' + item.path"
+              :index="'/' + subItem.path"
               v-for="subItem in item.children"
               :key="subItem.id"
               @click="saveNavState('/' + subItem.path)"
@@ -95,7 +96,7 @@ export default {
         return this.$message.error(res.mete.msg)
       }
       this.menulist = res.data
-      console.log(res)
+      console.log(this.menulist)
     },
     toggleCollapse() {
       this.isCollapse = !this.isCollapse
