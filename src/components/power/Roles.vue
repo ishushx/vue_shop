@@ -24,11 +24,19 @@
         <el-table-column label="角色名称" prop="roleName"></el-table-column>
         <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
         <el-table-column label="操作" width="300px">
-          <template slot-scope="">
-            <el-button size="mini" type="primary" icon="el-icon-edit"
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary"
+              icon="el-icon-edit"
+              @click="showEditDialog(scope.row.id)"
               >编辑</el-button
             >
-            <el-button size="mini" type="danger" icon="el-icon-delete"
+            <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"
+              @click="removeRolesById(scope.row.id)"
               >删除</el-button
             >
             <el-button size="mini" type="warning" icon="el-icon-setting"
@@ -67,6 +75,32 @@
         <el-button type="primary" @click="addRules()">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 编辑表单 -->
+    <el-dialog
+      title="修改角色"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClosed()"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        label-width="80px"
+        :rules="editFormRules"
+      >
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="editForm.roleName"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="editForm.roleDesc"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editRoleInfo()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -80,9 +114,34 @@ export default {
       //所有角色列表数据
       roleList: [],
       addDialogVisible: false,
+      editDialogVisible: false,
       addForm: {
         roleName: '',
         roleDesc: ''
+      },
+      editForm: {},
+      editFormRules: {
+        roleName: [
+          {
+            required: true,
+            message: '请输入角色名',
+            trigger: 'blur'
+          },
+          {
+            min: 3,
+            max: 10,
+            message: '角色名在 3 到 10 个字符之间',
+            trigger: 'blur'
+          }
+        ],
+        roleDesc: [
+          {
+            min: 3,
+            max: 10,
+            message: '角色描述在 3 到 10 个字符之间',
+            trigger: 'blur'
+          }
+        ]
       },
       addFormRules: {
         roleName: [
@@ -99,10 +158,6 @@ export default {
           }
         ],
         roleDesc: [
-          {
-            message: '请输入角色描述',
-            trigger: 'blur'
-          },
           {
             min: 3,
             max: 10,
@@ -128,6 +183,9 @@ export default {
     addDialogClosed() {
       this.$refs.addFormRef.resetFields()
     },
+    editDialogClosed() {
+      this.$refs.editFormRef.resetFields()
+    },
     addRules() {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
@@ -141,6 +199,59 @@ export default {
         this.addDialogVisible = false
         this.getRolesList()
       })
+    },
+    async showEditDialog(id) {
+      console.log(id)
+      const { data: res } = await this.$http.get('roles/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取角色失败!')
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    editRoleInfo() {
+      this.$refs.editFormRef.validate(async valid => {
+        console.log(valid)
+        if (!valid) return
+
+        const { data: res } = await this.$http.put(
+          'roles/' + this.editForm.roleId,
+          {
+            roleName: this.editForm.roleName,
+            roleDesc: this.editForm.roleDesc
+          }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error('角色信息更新失败!')
+        } else {
+          this.$message.success('角色信息更新成功!')
+        }
+        this.editDialogVisible = false
+        this.getRolesList()
+      })
+    },
+    async removeRolesById(id) {
+      console.log(id)
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该角色, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(error => error)
+
+      if (confirmResult !== 'confirm') return this.$message.info('取消删除')
+
+      const { data: res } = await this.$http.delete('roles/' + id)
+
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除失败')
+      }
+
+      this.$message.success('删除角色成功!')
+      this.getRolesList()
     }
   }
 }
