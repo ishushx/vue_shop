@@ -25,7 +25,6 @@
           :router="true"
           :default-active="activePath"
         >
-        
           <!-- 一级菜单 -->
           <el-submenu
             :index="item.id + ''"
@@ -96,7 +95,6 @@ export default {
         return this.$message.error(res.mete.msg)
       }
       this.menulist = res.data
-      console.log(this.menulist)
     },
     toggleCollapse() {
       this.isCollapse = !this.isCollapse
