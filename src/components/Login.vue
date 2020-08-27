@@ -2,7 +2,7 @@
   <div class="login_container">
     <div class="login_box">
       <div class="avatar_box">
-        <img src="../assets/logo.png" alt="" />
+        <img src="../assets/logo.png" alt />
       </div>
       <!-- 登录表单 -->
       <el-form
@@ -14,11 +14,7 @@
       >
         <!-- 用户名 -->
         <el-form-item prop="username">
-          <el-input
-            prefix-icon="el-icon-user"
-            v-model="loginForm.username"
-            clearable
-          ></el-input>
+          <el-input prefix-icon="el-icon-user" v-model="loginForm.username" clearable></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">
@@ -99,6 +95,7 @@ export default {
 .login_container {
   background-color: #2b4b6b;
   height: 100%;
+  background-image: url('../assets/cool-background.png');
 }
 .login_box {
   width: 450px;
