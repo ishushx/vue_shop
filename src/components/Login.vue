@@ -14,7 +14,11 @@
       >
         <!-- 用户名 -->
         <el-form-item prop="username">
-          <el-input prefix-icon="el-icon-user" v-model="loginForm.username" clearable></el-input>
+          <el-input
+            prefix-icon="el-icon-user"
+            v-model="loginForm.username"
+            clearable
+          ></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">
@@ -96,6 +100,8 @@ export default {
   background-color: #2b4b6b;
   height: 100%;
   background-image: url('../assets/cool-background.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 .login_box {
   width: 450px;
